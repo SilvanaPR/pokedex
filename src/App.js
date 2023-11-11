@@ -15,7 +15,6 @@ const addTeam = (pokemon) => {
   if ((window.team.length < 6) && (!window.team.includes(pokemon))){
     window.team.push(pokemon);
     localStorage.setItem('teamArray', JSON.stringify(window.team));
-    console.log(localStorage.getItem('teamArray'));
     handleConfirmationAlert('Pokemon Added');
   } else if (window.team.length < 6){
     handleErrorAlert('Error', 'You already have that pokemon on you team')
@@ -84,12 +83,11 @@ function App() {
   useEffect(() => {
     fetchPokemons();
     window.team = JSON.parse(localStorage.getItem('teamArray'));
-    console.log(window.team);
   }, []);
 
   return (
-    <div class="bg-pokedex">
-    <Pokedex pokemons={pokemons} selectedPokemon={selectedPokemon} setSelectedPokemon={setSelectedPokemon} />
+    <div className="bg-pokedex bg-auto bg-repeat pb-10">
+      <Pokedex pokemons={pokemons} selectedPokemon={selectedPokemon} setSelectedPokemon={setSelectedPokemon} />
     </div>
   )
 }

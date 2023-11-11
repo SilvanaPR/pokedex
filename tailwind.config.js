@@ -1,8 +1,12 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./src/**/*.{js,jsx,ts,tsx}",],
+  content: [
+    "./src/**/*.{js,jsx,ts,tsx}",
+    "./node_modules/flowbite/**/*.js",
+  ],
   theme: {
     borderRadius:{
+      'sm': '8px',
       'md': '48px',
       'full':'9999px'
     },
@@ -19,7 +23,7 @@ module.exports = {
         'normal':'#C2C2A1',
         'flying':'#BAB0D5',
         'ghos':'#735797',
-        'dark':'#333',
+        'dark':'#942942',
         'steel':'#CCCCDE',
         'ground':'#B1736C',
         'poison':'#7C538C',
@@ -30,6 +34,9 @@ module.exports = {
         'ice':'#7FCCEC',
         'rock':'#a6aab6',
         'dragon':'#F9BE00',
+        'ghost' : '#F7553C',
+        'unknown' : '#B2FF08',
+        'shadow' : '#CF98FF',
       },
       screens: {
         'xs': '475px',
@@ -41,6 +48,8 @@ module.exports = {
       backgroundOpacity: ['active'],
     },
   },
-  plugins: [],
+  plugins: [
+    require('flowbite/plugin')
+  ],
 }
 

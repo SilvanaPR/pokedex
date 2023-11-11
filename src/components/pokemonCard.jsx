@@ -38,7 +38,7 @@ const PokemonCard = ({ pokemon, index, moveCard, onTeamUpdate }) => {
             </h3>
           </div>
 
-          <button class="absolute top-0 left-0 pl-6 pt-4 opacity-30 text-gray-50 font-heywow text-2xl" onClick={() => {handleDeleteMember(pokemon) }}>X</button>
+          <button className="absolute top-0 left-0 pl-6 pt-4 opacity-30 text-gray-50 font-heywow text-2xl" onClick={() => {handleDeleteMember(pokemon) }}>X</button>
 
           <div className="grid grid-cols-12 relative mt-2 gap-x-4">
             <div className="text-sm leading-6 col-span-4">
