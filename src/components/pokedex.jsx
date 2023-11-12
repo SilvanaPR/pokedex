@@ -10,7 +10,6 @@ const Pokedex = (all) => {
   const { pokemons } = all;
   const [selectedPokemon, setSelectedPokemon] = useState(null);
   const [showTeam, setShowTeam] = useState(false);
-  const [teamUpdated, setTeamUpdated] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('name');
   const [pokemonName, setPokemonName] = useState(null);
   const [searchValue, setSearchValue] = useState('');
@@ -27,10 +26,6 @@ const Pokedex = (all) => {
 
   const closeTeam = () => {
     setShowTeam(false);
-  };
-
-  const handleTeamUpdate = () => {
-    setTeamUpdated(!teamUpdated);
   };
 
   const fetchPokemon = async (name) => {
@@ -86,6 +81,7 @@ const Pokedex = (all) => {
   
 
   const filterType = (typeName) => {
+    setSearchValue(typeName);
 
     if (typeName === 'all') {
       setSelectedType(pokemons);
@@ -120,14 +116,13 @@ const Pokedex = (all) => {
             <div className="relative w-full">
                 <input value={searchValue} onChange={handleSearch} className="p-2.5 w-full z-20 text-sm text-gray-900 bg-gray-50 rounded-e-lg border-s-gray-50 border-s-2 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-s-gray-700  dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500" placeholder="Search Pokemon..." />
 
-                {selectedCategory === 'type' &&(
-                  <button type="button" className="absolute top-0 end-0 p-2.5 text-sm font-medium h-full text-white bg-blue-700 rounded-r-sm border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" onClick={handleSearch}>
-                    <svg className="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-                    </svg>
-                    <span className="sr-only">Search</span>
-                  </button>
-                )}
+                <button type="button" className="absolute top-0 end-0 p-2.5 text-sm font-medium h-full text-white bg-blue-700 rounded-r-sm border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" onClick={handleSearch}>
+                  <svg className="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                      <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
+                  </svg>
+                  <span className="sr-only">Search</span>
+                </button>
+
             </div>
         </div>
 
@@ -142,9 +137,12 @@ const Pokedex = (all) => {
           )}
         </div>
 
+        {showTeam && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-40 grid grid-cols-12" onClick={closeTeam}>
+            <Team onClose={closeTeam} />
+          </div>
+        )} 
 
-        {showTeam && ( <div className="fixed inset-0 bg-black opacity-50 z-40" onClick={closeTeam}></div> )}
-        {showTeam && <Team onClose={closeTeam} teamUpdated={teamUpdated} onTeamUpdate={handleTeamUpdate} />}
       </div>
 
       {selectedPokemon && (

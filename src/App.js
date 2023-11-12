@@ -60,7 +60,7 @@ const handleErrorAlert = (text, littleText) => {
 
 
 function App() {
-
+  
   const [pokemons, setPokemons] = useState([]);
   const [selectedPokemon, setSelectedPokemon] = useState(null);
 
