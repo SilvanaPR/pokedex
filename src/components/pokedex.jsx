@@ -15,9 +15,39 @@ const Pokedex = (all) => {
   const [searchValue, setSearchValue] = useState('');
   const [type, setType] = useState([]);
   const [selectedType, setSelectedType] = useState([]);
+  const [selectedPokemonIndex, setSelectedPokemonIndex] = useState(null);
 
-  const handlePokemonClick = (pokemonName) => {
+  const handlePokemonClick = (pokemonName, index) => {
+    setSelectedPokemonIndex(index);
     setSelectedPokemon(pokemons.find((pokemon) => pokemon.name === pokemonName));
+  };
+
+  const handleNextClick = () => {
+    if (selectedPokemonIndex !== null && selectedPokemonIndex < pokemons.length - 1 && selectedCategory == 'name' && searchValue === '') {
+      const nextPokemonIndex = selectedPokemonIndex + 1;
+      const nextPokemon = pokemons[nextPokemonIndex];
+      setSelectedPokemonIndex(nextPokemonIndex);
+      setSelectedPokemon(nextPokemon);
+    } else if (selectedPokemonIndex !== null && selectedPokemonIndex < selectedType.length - 1 && selectedCategory == 'type'){
+      const nextPokemonIndex = selectedPokemonIndex + 1;
+      const nextPokemon = selectedType[nextPokemonIndex];
+      setSelectedPokemonIndex(nextPokemonIndex);
+      setSelectedPokemon(nextPokemon);  
+    } 
+  };
+
+  const handlePrevClick = () => {
+    if (selectedPokemonIndex !== null && selectedPokemonIndex > 0 && selectedCategory == 'name') {
+      const prevPokemonIndex = selectedPokemonIndex - 1;
+      const prevPokemon = pokemons[prevPokemonIndex];
+      setSelectedPokemonIndex(prevPokemonIndex);
+      setSelectedPokemon(prevPokemon);
+    } else if (selectedPokemonIndex !== null && selectedPokemonIndex > 0 & selectedCategory == 'type'){
+      const prevPokemonIndex = selectedPokemonIndex - 1;
+      const prevPokemon = selectedType[prevPokemonIndex];
+      setSelectedPokemonIndex(prevPokemonIndex);
+      setSelectedPokemon(prevPokemon);
+    }
   };
 
   const openTeam = () => {
@@ -53,13 +83,14 @@ const Pokedex = (all) => {
 
 
   const handleSearch = (e) => {
-    const value = e.target.value;
+    const value = e.target.value.replace(/\s/g, "");
     setSearchValue(value);
 
     if (searchValue !== ''){
       fetchPokemon(searchValue.toLowerCase());
     }
   };
+  
 
   useEffect(() => {
     if (searchValue !== '') {
@@ -97,11 +128,13 @@ const Pokedex = (all) => {
   return (
     <div>
       <div className="header grid grid-cols-12 justify-center">
-        <h1 className="font-heywow font-bold text-lg xs:text-5xl sm:text-3xl lg:text-6xl xl:text-7xl text-gray-600 text-center mt-12 col-span-12 mb-10">Pokedex</h1>
+        <h1 className="font-heywow font-bold text-lg xs:text-5xl sm:text-4xl lg:text-6xl xl:text-7xl text-gray-600 text-center mt-12 col-span-12 mb-6">Pokedex</h1>
+
+        <h2 className="font-heywow font-bold xs:text-xl sm:text-md lg:text-xl xl:text-2xl text-gray-600 text-center col-span-12 mb-10 rounded-sm col-span-4 col-start-5 py-2">Click them to se more...</h2>
 
         <div className="col-span-12 grid grid-cols-12">
           <button
-            className="font-heywow font-semibold col-span-4 lg:col-span-2 bg-gray-300 hover:bg-gray-400 focus:ring-2 rounded-full p-4 mb-6 hover:bg-gray-400 bg-gray-200 lg:col-start-6 col-start-5 text-gray-600 "
+            className="font-heywow font-semibold col-span-4 lg:col-span-2 bg-gray-300 hover:bg-gray-400 focus:ring-2 rounded-full p-4 mb-6 hover:bg-gray-400 bg-gray-200 lg:col-start-6 col-start-5 text-gray-600 transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110`"
             onClick={openTeam}>Your Team</button> 
         </div>
         
@@ -131,7 +164,7 @@ const Pokedex = (all) => {
             <>
               <button className="bg-gray-100 rounded-full xs:col-span-3 md:col-span-2 lg:col-span-1 py-2 capitalize font-heywow font-semibold hover:bg-gray-300 border border-gray-300" onClick={() => filterType("all")}>All</button>
               {type.map((ty) => (
-                <button key={ty} className={`${getTypeClass(ty)} rounded-full xs:col-span-3 md:col-span-2 lg:col-span-1 py-2 capitalize font-heywow font-semibold hover:bg-gray-300 border border-gray-300`} onClick={() => filterType(ty)}>{ty}</button>
+                <button key={ty} className={`${getTypeClass(ty)} rounded-full xs:col-span-3 md:col-span-2 lg:col-span-1 py-2 capitalize font-heywow font-semibold hover:bg-gray-300 border border-gray-300 transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110`} onClick={() => filterType(ty)}>{ty}</button>
               ))}
             </>
           )}
@@ -155,7 +188,7 @@ const Pokedex = (all) => {
       {(selectedCategory === 'name' && searchValue === '') && (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-6 mr-8 ml-8">
             {pokemons.map((pokemon, idx) => {              
-              return <Pokemon pokemon={pokemon} key={pokemon.name} onClick={handlePokemonClick} />;
+              return <Pokemon pokemon={pokemon} key={pokemon.name} index={idx} onClick={handlePokemonClick} />;
             })}
           </div>   
       )} 
@@ -164,11 +197,11 @@ const Pokedex = (all) => {
         <div className="grid grid-cols-12 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-6 mr-8 ml-8">
           {pokemonName.length > 0 ? (
             pokemonName.map((pokemon, idx) => (
-              <Pokemon pokemon={pokemon} key={pokemon.name} onClick={handlePokemonClick} />
+              <Pokemon pokemon={pokemon} key={pokemon.name} index={idx} onClick={handlePokemonClick} />
             ))
           ) : (
             <div className="justify-self-center col-span-12 bg-gray-200 rounded-sm py-4 px-6 bg-opacity-80 ">
-                <h1>Pokemon Not Found :( </h1>
+                <h1>Pokemon Not Found :(</h1>
             </div>
           )}
         </div>
@@ -178,7 +211,7 @@ const Pokedex = (all) => {
         <div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-6 mr-8 ml-8">
             {selectedType.map((pokemon, idx) => {              
-              return <Pokemon pokemon={pokemon} key={pokemon.name} onClick={handlePokemonClick} />;
+              return <Pokemon pokemon={pokemon} key={pokemon.name} index={idx} onClick={handlePokemonClick} />;
             })}          
           </div>
         </div>     
@@ -193,7 +226,7 @@ const Pokedex = (all) => {
       )}
       
       <div className="grid grid-rows-2">
-        <Detail pokemon={selectedPokemon} onClose={() => setSelectedPokemon(null)} />
+        <Detail pokemon={selectedPokemon} onClose={() => setSelectedPokemon(null)} onNextClick={handleNextClick} onPrevClick={handlePrevClick}/>
       </div>
 
     </div>

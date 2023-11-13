@@ -28,14 +28,14 @@ const PokemonCard = ({ pokemon, index, moveCard }) => {
   
     return (
       <div ref={(node) => ref(drop(node))} className={`${getTypeClass(pokemon.types[0].type.name)} rounded-md pl-8 pr-4 py-10 grid grid-cols-12 relative col-span-10 col-start-2 bg-local lg:pl-12`} style={{ backgroundImage: `url('../assets/images/pokeball.jpg')` }}>
-        <div className="card-body gap-x-6 gap-y-16 col-span-8 xs:col-span-6">
+        <div className="card-body gap-x-6 gap-y-16 col-span-6">
           <div className="card-top">
-            <h3 className="capitalize font-heywow font-bold text-lg xs:text-2xl sm:text-3xl md:text-xl text-gray-50 lg:text-2xl sm:pl-2">
+            <h3 className="capitalize font-heywow font-bold text-lg text-2xl sm:text-3xl md:text-xl text-gray-50 lg:text-2xl sm:pl-2">
               {pokemon.name}
             </h3>
           </div>
 
-          <button className="absolute top-0 left-0 pl-6 pt-4 opacity-30 text-gray-50 font-heywow text-2xl" onClick={() => {handleDeleteMember(pokemon) }}>X</button>
+          <button className="absolute top-0 left-0 pl-6 pt-4 opacity-30 text-gray-50 font-heywow text-2xl transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110" onClick={() => {handleDeleteMember(pokemon) }}>X</button>
 
           <div className="grid grid-cols-12 relative mt-2 gap-x-4">
             <div className="leading-6 col-span-4 sm:col-span-5">
@@ -52,7 +52,7 @@ const PokemonCard = ({ pokemon, index, moveCard }) => {
             </div>
           </div>
         </div>
-        <div className="pokemon-img flex justify-end col-span-4 gap-x-8 gap-y-16 mx-0 max-w-none col xs:col-span-6">
+        <div className="pokemon-img flex justify-end col-span-4 gap-x-8 gap-y-16 mx-0 max-w-none col col-span-6">
           <div className="absolute top-0 right-0 pr-6 pt-4 opacity-30 text-gray-50 font-heywow text-3xl sm:text-4xl">
             #{pokemon.id.toString().padStart(3, "0")}
           </div>

@@ -3,7 +3,6 @@ import './App.css';
 import Pokedex from './components/pokedex';
 import { getPokemonData, getPokemons } from './api';
 import {useState, useEffect} from 'react';
-import Message from './components/message';
 import Swal from 'sweetalert2';
 
 window.team = [];
@@ -63,15 +62,18 @@ function App() {
   
   const [pokemons, setPokemons] = useState([]);
   const [selectedPokemon, setSelectedPokemon] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const fetchPokemons = async () => {
     try {
+      setLoading(true)
       const data = await getPokemons();
       const promises = data.results.map(async (pokemon) => {
         return await getPokemonData(pokemon.url);
       });
       const results = await Promise.all(promises);
       setPokemons(results);
+      setLoading(false)
     } catch (err) {}
   };
 
@@ -86,6 +88,7 @@ function App() {
   }, []);
 
   return (
+
     <div className="bg-pokedex bg-auto bg-repeat pb-10">
       <Pokedex pokemons={pokemons} selectedPokemon={selectedPokemon} setSelectedPokemon={setSelectedPokemon} />
     </div>

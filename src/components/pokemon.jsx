@@ -48,7 +48,7 @@ const getTypeClass = (type) => {
 
 
 const Pokemon = (props) => {
-  const { pokemon, onClick } = props;
+  const { pokemon, index, onClick } = props;
 
   const handleClick = () => {
     onClick(pokemon.name); 
@@ -56,7 +56,7 @@ const Pokemon = (props) => {
 
   return (
 
-    <div className={`${getTypeClass(pokemon.types[0].type.name)} rounded-md px-10 py-10 grid grid-cols-12 relative lg:px-6`} onClick={handleClick}>
+    <div className={`${getTypeClass(pokemon.types[0].type.name)} rounded-md px-10 py-10 grid grid-cols-12 relative lg:px-6 hover:bg-gray-300 transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110`} onClick={() => onClick(pokemon.name, index)} >
       <div  className=" gap-x-6 gap-y-16 col-span-8 xs:col-span-6">
         <div className="card-top">
           <h3 className="capitalize font-heywow font-bold text-lg xs:text-2xl sm:text-3xl lg:text-xl text-gray-50">{pokemon.name}</h3>
