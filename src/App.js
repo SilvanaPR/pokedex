@@ -74,7 +74,7 @@ function App() {
       const results = await Promise.all(promises);
       setPokemons(results);
       setLoading(false)
-    } catch (err) {}
+    } catch (err) {setLoading(false);}
   };
 
   const saveArrayToLocalStorage = () => {
@@ -89,9 +89,18 @@ function App() {
 
   return (
 
-    <div className="bg-pokedex bg-auto bg-repeat pb-10">
+
+    <div className="bg-pokedex bg-repeat w-full h-full p-10 min-h-screen flex items-center justify-center">
+    {loading ? (
+      <div className="w-1/12 text-center">
+        <div className="bg-loading bg-contain bg-no-repeat min-h-screen content-center bg-center animate-spin align-middle"></div>
+      </div>
+    ) : (
       <Pokedex pokemons={pokemons} selectedPokemon={selectedPokemon} setSelectedPokemon={setSelectedPokemon} />
+    )}
     </div>
+
+
   )
 }
 

@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 
 const Detail = (props) => {
     const { pokemon, onClose, onNextClick, onPrevClick } = props;
-    const [selectedCategory, setSelectedCategory] = useState('stats');
+    const [selectedCategory, setSelectedCategory] = useState('about');
 
     if (!pokemon) {
         return null;
@@ -95,7 +95,6 @@ const Detail = (props) => {
                 <div className="col-span-12 mx-6 font-bold text-gray-400 ">
                     <button className="px-4 hover:text-gray-900" onClick={() => handleCategory("about")}>About</button>
                     <button className="px-4 hover:text-gray-900" onClick={() => handleCategory("stats")}>Base Stats</button>
-                    <button className="px-4 hover:text-gray-900">Evoution</button>
                 </div>     
 
                 {selectedCategory === 'stats' && (<div className="col-span-12 mx-8 sm:mt-6 self-align-start md:mt-4 lg:mt-6 font-heywow mb-4">

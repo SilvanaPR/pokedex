@@ -16,6 +16,7 @@ const Pokedex = (all) => {
   const [type, setType] = useState([]);
   const [selectedType, setSelectedType] = useState([]);
   const [selectedPokemonIndex, setSelectedPokemonIndex] = useState(null);
+  const [loading, setLoading] = useState(false); 
 
   const handlePokemonClick = (pokemonName, index) => {
     setSelectedPokemonIndex(index);
@@ -60,6 +61,7 @@ const Pokedex = (all) => {
 
   const fetchPokemon = async (name) => {
     try {
+      setLoading(true);
       const data = await searchPokemonName(name);
 
       if (data) {
@@ -68,8 +70,8 @@ const Pokedex = (all) => {
       } else {
         setPokemonName([]);
       }
-      
-    } catch (err) {}
+      setLoading(false);
+    } catch (err) {setLoading(false);}
   };
 
   const handleCategory = (cat) => {
@@ -223,6 +225,12 @@ const Pokedex = (all) => {
             <h1>Pokemon Not Found :( </h1>
           </div>    
         </div>    
+      )}
+
+      {1 && (
+        <div className="w-1/12 h-full">
+        <div className="bg-loading bg-contain bg-no-repeat h-full bg-center animate-spin "></div>
+        </div>
       )}
       
       <div className="grid grid-rows-2">

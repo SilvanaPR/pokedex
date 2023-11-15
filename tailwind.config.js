@@ -14,6 +14,7 @@ module.exports = {
       backgroundImage: {
         'pokedex': "url('/assets/images/background.jpg')",
         'pokemon': "url('/assets/images/pokeball.jpg')",
+        'loading': "url('/assets/images/loading.png')",
        },
       backgroundColor: {
         'grass': '#48d0b0', 
