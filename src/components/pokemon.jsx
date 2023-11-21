@@ -63,10 +63,10 @@ const Pokemon = (props) => {
         </div>
         
         <div className="grid grid-cols-12 relative mt-2 gap-x-4">
-        <div className="text-sm leading-6 col-span-4">
+        <div className="text-sm leading-6 col-span-5">
           <div className="flex flex-col text-xs gap-y-1 gap-x-4 ">
             {pokemon.types.map((type, idx) => {
-              return <a href="#" className="relative z-10 rounded-full bg-opacity-20 bg-gray-50 px-2 py-1.5 font-medium capitalize font-heywow text-gray-50 text-center" key={idx}> {type.type.name}</a>;
+              return <a href="#" className="relative z-10 rounded-full bg-opacity-20 bg-gray-50 px-2 py-1.5 font-medium capitalize font-heywow text-gray-50 text-center" key={idx}>{type.type.name}</a>;
             })}
           </div>                    
         </div>

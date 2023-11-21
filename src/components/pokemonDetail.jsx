@@ -69,7 +69,7 @@ const Detail = (props) => {
 
                     <div className="flex text-xs gap-x-2 text-sm mx-2 my-1 col-span-12">
                         {pokemon.types.map((type, idx) => {
-                        return <a href="#" className="relative z-10 rounded-full bg-opacity-20 bg-gray-50 px-2 py-1.5 font-medium capitalize font-heywow text-gray-50 text-center sm:text-sm lg:text-md" key={idx}> {type.type.name}</a>;
+                        return <a href="#" className="relative z-10 rounded-full bg-opacity-20 bg-gray-50 px-3 py-1.5 font-medium capitalize font-heywow text-gray-50 text-center sm:text-sm lg:text-md" key={idx}> {type.type.name}</a>;
                         })}
                     </div>      
                 </div>

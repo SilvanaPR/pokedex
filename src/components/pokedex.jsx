@@ -3,8 +3,9 @@ import Pokemon from "./pokemon";
 import Detail from "./pokemonDetail";
 import Team from "./team";
 import { useState, useEffect } from 'react';
-import { searchPokemonName, getTypePokemon } from "../api";
+import { searchPokemonName, getTypePokemon, searchPokemonType, getPokemonData } from "../api";
 import { getTypeClass } from "./pokemon";
+import Swal from 'sweetalert2';
 
 const Pokedex = (all) => {
   const { pokemons } = all;
@@ -18,12 +19,76 @@ const Pokedex = (all) => {
   const [selectedPokemonIndex, setSelectedPokemonIndex] = useState(null);
   const [loading, setLoading] = useState(false); 
 
+ 
+
+
+  useEffect(() => {
+    if (searchValue && searchValue !== '') {
+      fetchPokemonName(searchValue.toLowerCase());
+    }
+    
+  }, [searchValue]);
+
+  useEffect(() => {
+    const offset = (currentPage - 1) * pokemonsPerPage;
+    fetchPokemons(pokemonsPerPage, offset);
+    window.team = JSON.parse(localStorage.getItem('teamArray'));
+  }, [currentPage]);
+
+  const changePage = (direction) => {
+    if (direction == "next"){
+      setCurrentPage(currentPage + 1)
+    } else if (currentPage > 1){
+      setCurrentPage(currentPage - 1)
+    }
+  }
+
+
+  // POKEMONS
+
+  const fetchPokemons = async (limit, offset) => {
+    try {
+      setLoading(true)
+      const data = await getPokemons(limit, offset);
+      const promises = data.results.map(async (pokemon) => {
+        return await getPokemonData(pokemon.url);
+      });
+      const results = await Promise.all(promises);
+      setPokemons(results);
+      setLoading(false)
+    } catch (err) {setLoading(false);}
+  };
+
+  // ALERT MESSAGES ------------------------------------------------------------------------------------------------------
+
+  const handleConfirmationAlert = (text,littleText) => {
+    Swal.fire({
+      title: text,
+      text:littleText,
+      icon: 'succes',
+      confirmButtonText: 'Ok',
+    });
+  };
+  
+  const handleErrorAlert = (text, littleText) => {
+    Swal.fire({
+      title: text,
+      text: littleText,
+      icon: 'error',
+      confirmButtonText: 'Ok',
+    });
+  };
+
+  // DETAIL ------------------------------------------------------------------------------------------------------
+
   const handlePokemonClick = (pokemonName, index) => {
+    //HANDLES POKEMON CLICK TO SEE DETAIL
     setSelectedPokemonIndex(index);
     setSelectedPokemon(pokemons.find((pokemon) => pokemon.name === pokemonName));
   };
 
   const handleNextClick = () => {
+    //HANDLES NEXT POKEMON DETAIL
     if (selectedPokemonIndex !== null && selectedPokemonIndex < pokemons.length - 1 && selectedCategory == 'name' && searchValue === '') {
       const nextPokemonIndex = selectedPokemonIndex + 1;
       const nextPokemon = pokemons[nextPokemonIndex];
@@ -38,6 +103,7 @@ const Pokedex = (all) => {
   };
 
   const handlePrevClick = () => {
+    //HANDLES PREVIOUS POKEMON DETAIL
     if (selectedPokemonIndex !== null && selectedPokemonIndex > 0 && selectedCategory == 'name') {
       const prevPokemonIndex = selectedPokemonIndex - 1;
       const prevPokemon = pokemons[prevPokemonIndex];
@@ -51,6 +117,7 @@ const Pokedex = (all) => {
     }
   };
 
+  //TEAM ------------------------------------------------------------------------------------------------------
   const openTeam = () => {
     setShowTeam(true);
   };
@@ -59,7 +126,22 @@ const Pokedex = (all) => {
     setShowTeam(false);
   };
 
-  const fetchPokemon = async (name) => {
+  //FILTER ------------------------------------------------------------------------------------------------------
+
+  const handleCategory = (cat) => {
+    //HANDLES THE SELECTED CATEGORY
+    setSelectedCategory(cat);
+    
+    if (cat == 'type'){
+      fetchTypes();
+      filterType('all'); 
+    }
+  };
+
+  //NAME FILTER ------------------------------------------------------------------------------------------------------
+
+  const fetchPokemonName = async (name) => {
+    //FILTERS POKEMON BY NAME
     try {
       setLoading(true);
       const data = await searchPokemonName(name);
@@ -74,34 +156,21 @@ const Pokedex = (all) => {
     } catch (err) {setLoading(false);}
   };
 
-  const handleCategory = (cat) => {
-    setSelectedCategory(cat);
-    
-    if (cat == 'type'){
-      fetchTypes();
-      filterType('all'); 
-    }
-  };
-
-
   const handleSearch = (e) => {
+    //HANDLES DE SEARCHBAR
     const value = e.target.value.replace(/\s/g, "");
     setSearchValue(value);
 
-    if (searchValue !== ''){
-      fetchPokemon(searchValue.toLowerCase());
+    if (searchValue && searchValue !== ''){
+      fetchPokemonName(searchValue.toLowerCase());
     }
   };
-  
 
-  useEffect(() => {
-    if (searchValue !== '') {
-      fetchPokemon(searchValue.toLowerCase());
-    }
-    
-  }, [searchValue]);
+  
+  //TYPE FILTER ------------------------------------------------------------------------------------------------------
 
   const fetchTypes = async () => {
+    //GETS ALL THE EXISTING TYPES
     try {
       const data = await getTypePokemon();
       const promises = data.results.map(async (type) => {
@@ -112,18 +181,28 @@ const Pokedex = (all) => {
     } catch (err) {}
   };
   
+  const fetchPokemonsFiltered = async (typeID) => {
+    //FILTERS POKEMONS BY TYPE
+    try {  
+      let numero = parseInt(typeID)+1;
+      const data = await searchPokemonType(numero);  
+      
+      const promises = data.pokemon.map(async (pokemon) => {
+        return await getPokemonData(pokemon.pokemon.url);
+      });
+      const results = await Promise.all(promises);
+      setSelectedType(results);
+    } catch (err) {}
+  };
 
-  const filterType = (typeName) => {
-    setSearchValue(typeName);
+  const filterType = (typeName, name) => {
+    //HANDLES THE SELECTED TYPE
+    setSearchValue(name);
 
     if (typeName === 'all') {
       setSelectedType(pokemons);
     } else {
-      const filteredPokemons = pokemons.filter((pokemon) => {
-        return pokemon.types.some((type) => type.type.name === typeName);
-      });
-
-      setSelectedType(filteredPokemons);
+      fetchPokemonsFiltered(typeName);
     }
   };
 
@@ -166,7 +245,8 @@ const Pokedex = (all) => {
             <>
               <button className="bg-gray-100 rounded-full xs:col-span-3 md:col-span-2 lg:col-span-1 py-2 capitalize font-heywow font-semibold hover:bg-gray-300 border border-gray-300" onClick={() => filterType("all")}>All</button>
               {type.map((ty) => (
-                <button key={ty} className={`${getTypeClass(ty)} rounded-full xs:col-span-3 md:col-span-2 lg:col-span-1 py-2 capitalize font-heywow font-semibold hover:bg-gray-300 border border-gray-300 transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110`} onClick={() => filterType(ty)}>{ty}</button>
+                <button key={ty} className={`${getTypeClass(ty)} rounded-full xs:col-span-3 md:col-span-2 lg:col-span-1 py-2 capitalize font-heywow font-semibold hover:bg-gray-300 border border-gray-300 transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110`} onClick={() => filterType(type.indexOf(ty).toString(), ty)}>{ty}</button>
+
               ))}
             </>
           )}
@@ -180,58 +260,63 @@ const Pokedex = (all) => {
 
       </div>
 
-      {selectedPokemon && (
-        <div
-          className="fixed inset-0 bg-black opacity-50 z-40"
-          onClick={() => setSelectedPokemon(null)}
-        ></div>
-      )}
+      { // BLUR BACKGROUND WHEN POKEMON IS SELECTED 
+        selectedPokemon && (
+          <div
+            className="fixed inset-0 bg-black opacity-50 z-40"
+            onClick={() => setSelectedPokemon(null)}
+          ></div>
+        )
+      }
 
-      {(selectedCategory === 'name' && searchValue === '') && (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-6 mr-8 ml-8">
-            {pokemons.map((pokemon, idx) => {              
-              return <Pokemon pokemon={pokemon} key={pokemon.name} index={idx} onClick={handlePokemonClick} />;
-            })}
-          </div>   
-      )} 
+      { // SHOW ALL POKEMONS WHEN SEARCHBAR EMPTY
+        (selectedCategory === 'name' && searchValue === '') && (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-6 mr-8 ml-8">
+              {pokemons.map((pokemon, idx) => {              
+                return <Pokemon pokemon={pokemon} key={pokemon.name} index={idx} onClick={handlePokemonClick} />;
+              })}
+            </div>   
+        )
+      } 
 
-      {selectedCategory === 'name' && pokemonName !== null && (
-        <div className="grid grid-cols-12 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-6 mr-8 ml-8">
-          {pokemonName.length > 0 ? (
-            pokemonName.map((pokemon, idx) => (
-              <Pokemon pokemon={pokemon} key={pokemon.name} index={idx} onClick={handlePokemonClick} />
-            ))
-          ) : (
-            <div className="justify-self-center col-span-12 bg-gray-200 rounded-sm py-4 px-6 bg-opacity-80 ">
-                <h1>Pokemon Not Found :(</h1>
-            </div>
-          )}
-        </div>
-      )}
-
-      {(selectedCategory === 'type' && selectedType.length > 0) && (
-        <div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-6 mr-8 ml-8">
-            {selectedType.map((pokemon, idx) => {              
-              return <Pokemon pokemon={pokemon} key={pokemon.name} index={idx} onClick={handlePokemonClick} />;
-            })}          
+      { // FILTER POKEMONS BY NAME WITH SEARCHBAR
+        selectedCategory === 'name' && pokemonName !== null && (
+          <div className="grid grid-cols-12 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-6 mr-8 ml-8">
+            {pokemonName.length > 0 ? (
+              pokemonName.map((pokemon, idx) => (
+                <Pokemon pokemon={pokemon} key={pokemon.name} index={idx} onClick={handlePokemonClick} />
+              ))
+            ) : (
+              <div className="justify-self-center col-span-12 bg-gray-200 rounded-sm py-4 px-6 bg-opacity-80 ">
+                  <h1>Pokemon Not Found :(</h1>
+              </div>
+            )}
           </div>
-        </div>     
-      )}
+        )
+      }
 
-      {(selectedCategory === 'type' && selectedType.length === 0) && (
-        <div className="grid grid-cols-12">
-          <div className="justify-self-center col-span-12 bg-gray-200 rounded-sm py-4 px-6 bg-opacity-80 ">
-            <h1>Pokemon Not Found :( </h1>
+
+      { // FILTER POKEMONS BY TYPE
+        (selectedCategory === 'type' && selectedType.length > 0) && (
+          <div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-6 mr-8 ml-8">
+              {selectedType.map((pokemon, idx) => {              
+                return <Pokemon pokemon={pokemon} key={pokemon.name} index={idx} onClick={handlePokemonClick} />;
+              })}          
+            </div>
+          </div>     
+        )
+      }
+
+      { // TYPE NOT FOUND MESSAGE
+        (selectedCategory === 'type' && selectedType.length === 0) && (
+          <div className="grid grid-cols-12">
+            <div className="justify-self-center col-span-12 bg-gray-200 rounded-sm py-4 px-6 bg-opacity-80 ">
+              <h1>Pokemon Not Found :( </h1>
+            </div>    
           </div>    
-        </div>    
-      )}
-
-      {1 && (
-        <div className="w-1/12 h-full">
-        <div className="bg-loading bg-contain bg-no-repeat h-full bg-center animate-spin "></div>
-        </div>
-      )}
+        )
+      }
       
       <div className="grid grid-rows-2">
         <Detail pokemon={selectedPokemon} onClose={() => setSelectedPokemon(null)} onNextClick={handleNextClick} onPrevClick={handlePrevClick}/>

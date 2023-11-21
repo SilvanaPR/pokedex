@@ -1,4 +1,3 @@
-import logo from './logo.svg';
 import './App.css';
 import Pokedex from './components/pokedex';
 import { getPokemonData, getPokemons } from './api';
@@ -58,16 +57,19 @@ const handleErrorAlert = (text, littleText) => {
 };
 
 
+
 function App() {
   
   const [pokemons, setPokemons] = useState([]);
   const [selectedPokemon, setSelectedPokemon] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pokemonsPerPage = 20;
 
-  const fetchPokemons = async () => {
+  const fetchPokemons = async (limit, offset) => {
     try {
       setLoading(true)
-      const data = await getPokemons();
+      const data = await getPokemons(limit, offset);
       const promises = data.results.map(async (pokemon) => {
         return await getPokemonData(pokemon.url);
       });
@@ -83,9 +85,18 @@ function App() {
   
 
   useEffect(() => {
-    fetchPokemons();
+    const offset = (currentPage - 1) * pokemonsPerPage;
+    fetchPokemons(pokemonsPerPage, offset);
     window.team = JSON.parse(localStorage.getItem('teamArray'));
-  }, []);
+  }, [currentPage]);
+
+  const changePage = (direction) => {
+    if (direction == "next"){
+      setCurrentPage(currentPage + 1)
+    } else if (currentPage > 1){
+      setCurrentPage(currentPage - 1)
+    }
+  }
 
   return (
 
@@ -96,7 +107,20 @@ function App() {
         <div className="bg-loading bg-contain bg-no-repeat min-h-screen content-center bg-center animate-spin align-middle"></div>
       </div>
     ) : (
-      <Pokedex pokemons={pokemons} selectedPokemon={selectedPokemon} setSelectedPokemon={setSelectedPokemon} />
+      <div>
+        
+        <Pokedex pokemons={pokemons} selectedPokemon={selectedPokemon} setSelectedPokemon={setSelectedPokemon} />
+        <div className="grid grid-cols-12 mt-8">   
+        <button
+            className="font-heywow font-semibold col-span-4 lg:col-span-1 bg-gray-300 hover:bg-gray-400 focus:ring-2 rounded-sm p-4 hover:bg-gray-400 bg-gray-200 text-gray-600 transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110`"
+            onClick={() => changePage("prev")}>PREV</button> 
+
+         <button
+            className="font-heywow font-semibold col-span-4 lg:col-span-1 bg-gray-300 hover:bg-gray-400 focus:ring-2 rounded-sm p-4 hover:bg-gray-400 bg-gray-200 col-start-9 lg:col-start-12 text-gray-600 transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110`"
+            onClick={() => changePage("next")}>NEXT</button>         
+        </div>
+        
+      </div>
     )}
     </div>
 
@@ -105,4 +129,4 @@ function App() {
 }
 
 export default App;
-export {addTeam, deleteMember,deleteTeam};
+export {addTeam, deleteMember, deleteTeam};
