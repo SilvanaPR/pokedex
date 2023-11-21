@@ -29,55 +29,7 @@ const Pokedex = (all) => {
     
   }, [searchValue]);
 
-  useEffect(() => {
-    const offset = (currentPage - 1) * pokemonsPerPage;
-    fetchPokemons(pokemonsPerPage, offset);
-    window.team = JSON.parse(localStorage.getItem('teamArray'));
-  }, [currentPage]);
 
-  const changePage = (direction) => {
-    if (direction == "next"){
-      setCurrentPage(currentPage + 1)
-    } else if (currentPage > 1){
-      setCurrentPage(currentPage - 1)
-    }
-  }
-
-
-  // POKEMONS
-
-  const fetchPokemons = async (limit, offset) => {
-    try {
-      setLoading(true)
-      const data = await getPokemons(limit, offset);
-      const promises = data.results.map(async (pokemon) => {
-        return await getPokemonData(pokemon.url);
-      });
-      const results = await Promise.all(promises);
-      setPokemons(results);
-      setLoading(false)
-    } catch (err) {setLoading(false);}
-  };
-
-  // ALERT MESSAGES ------------------------------------------------------------------------------------------------------
-
-  const handleConfirmationAlert = (text,littleText) => {
-    Swal.fire({
-      title: text,
-      text:littleText,
-      icon: 'succes',
-      confirmButtonText: 'Ok',
-    });
-  };
-  
-  const handleErrorAlert = (text, littleText) => {
-    Swal.fire({
-      title: text,
-      text: littleText,
-      icon: 'error',
-      confirmButtonText: 'Ok',
-    });
-  };
 
   // DETAIL ------------------------------------------------------------------------------------------------------
 
