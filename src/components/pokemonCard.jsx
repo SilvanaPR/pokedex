@@ -27,7 +27,7 @@ const PokemonCard = ({ pokemon, index, moveCard }) => {
     };
   
     return (
-      <div ref={(node) => ref(drop(node))} className={`${getTypeClass(pokemon.types[0].type.name)} rounded-md pl-8 pr-4 py-10 grid grid-cols-12 relative col-span-10 col-start-2 bg-local lg:pl-12`} style={{ backgroundImage: `url('../assets/images/pokeball.jpg')` }}>
+      <div ref={(node) => ref(drop(node))} className={`${getTypeClass(pokemon.types[0].type.name)} rounded-md pl-8 pr-4 py-10 grid grid-cols-12 relative col-span-10 col-start-2 bg-local lg:pl-12 my-8 mx-6`} style={{ backgroundImage: `url('../assets/images/pokeball.jpg')` }}>
         <div className="card-body gap-x-6 gap-y-16 col-span-6">
           <div className="card-top">
             <h3 className="capitalize font-heywow font-bold text-lg text-2xl sm:text-3xl md:text-xl text-gray-50 lg:text-2xl sm:pl-2">

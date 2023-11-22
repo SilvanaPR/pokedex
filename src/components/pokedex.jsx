@@ -3,12 +3,11 @@ import Pokemon from "./pokemon";
 import Detail from "./pokemonDetail";
 import Team from "./team";
 import { useState, useEffect } from 'react';
-import { searchPokemonName, getTypePokemon, searchPokemonType, getPokemonData } from "../api";
+import { searchPokemonName, getTypePokemon, searchPokemonType, getPokemonData, getPokemons } from "../api";
 import { getTypeClass } from "./pokemon";
-import Swal from 'sweetalert2';
 
-const Pokedex = (all) => {
-  const { pokemons } = all;
+const Pokedex = () => {
+
   const [selectedPokemon, setSelectedPokemon] = useState(null);
   const [showTeam, setShowTeam] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('name');
@@ -18,25 +17,78 @@ const Pokedex = (all) => {
   const [selectedType, setSelectedType] = useState([]);
   const [selectedPokemonIndex, setSelectedPokemonIndex] = useState(null);
   const [loading, setLoading] = useState(false); 
-
- 
+  const [pokemons, setPokemons] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pokemonsPerPage = 20;
+  const [typePage, setTypePage] = useState(1);
+  const [selectedTypeID, setSelectedTypeID] = useState(null);
+  const typePokemonsPerPage = 20;
 
 
   useEffect(() => {
+    const offset = (currentPage - 1) * pokemonsPerPage;
+    fetchPokemons(pokemonsPerPage, offset);
+    window.team = JSON.parse(localStorage.getItem('teamArray'));
+
     if (searchValue && searchValue !== '') {
       fetchPokemonName(searchValue.toLowerCase());
     }
+
+  }, [currentPage, searchValue]);
+
+
+  // PAGINATION  ------------------------------------------------------------------------------------------------------
+
+
+  const changePage = (direction) => {
+    if (direction === "next" && selectedCategory === "name") {
+      setCurrentPage(currentPage + 1);
+    } else if (currentPage > 1 && selectedCategory === "name") {
+      setCurrentPage(currentPage - 1);
+    } 
     
-  }, [searchValue]);
+    else if (direction === "next" && selectedCategory === "type" && searchValue !== 'all') {
+      setTypePage((prevPage) => {
+        const nextPage = prevPage + 1;
+        fetchPokemonsFiltered(selectedTypeID, nextPage);
+        return nextPage;
+      });
+    } else if (typePage > 1 && selectedCategory === "type" && searchValue !== 'all') {
+      setTypePage((prevPage) => {
+        const prevPageValue = prevPage - 1;
+        fetchPokemonsFiltered(selectedTypeID, prevPageValue);
+        return prevPageValue;
+      });
+    }
+  };
 
+  // POKEMONS ------------------------------------------------------------------------------------------------------
 
+  const fetchPokemons = async (limit, offset) => {
+    try {
+      if (searchValue == '') {setLoading(true)}
+      const data = await getPokemons(limit, offset);
+      const promises = data.results.map(async (pokemon) => {
+        return await getPokemonData(pokemon.url);
+      });
+      const results = await Promise.all(promises);
+      setPokemons(results);
+      if (searchValue == '') {setLoading(false)}
+    } catch (err) {setLoading(false);}
+  };
 
   // DETAIL ------------------------------------------------------------------------------------------------------
 
-  const handlePokemonClick = (pokemonName, index) => {
+  const handlePokemonClick = async (pokemonName, index) => {
     //HANDLES POKEMON CLICK TO SEE DETAIL
     setSelectedPokemonIndex(index);
-    setSelectedPokemon(pokemons.find((pokemon) => pokemon.name === pokemonName));
+    if (selectedCategory == "name") {
+      const pokemon = await fetchPokemonName(pokemonName);
+      setSelectedPokemon(pokemon);
+      
+    } else if (selectedCategory == "type"){
+      setSelectedPokemon(selectedType.find((pokemon) => pokemon.name === pokemonName));
+    }
   };
 
   const handleNextClick = () => {
@@ -95,17 +147,16 @@ const Pokedex = (all) => {
   const fetchPokemonName = async (name) => {
     //FILTERS POKEMON BY NAME
     try {
-      setLoading(true);
       const data = await searchPokemonName(name);
 
       if (data) {
         const result = [data];
         setPokemonName(result);
+        return result[0];
       } else {
         setPokemonName([]);
-      }
-      setLoading(false);
-    } catch (err) {setLoading(false);}
+      }  
+    } catch (err) {}
   };
 
   const handleSearch = (e) => {
@@ -117,7 +168,6 @@ const Pokedex = (all) => {
       fetchPokemonName(searchValue.toLowerCase());
     }
   };
-
   
   //TYPE FILTER ------------------------------------------------------------------------------------------------------
 
@@ -132,34 +182,49 @@ const Pokedex = (all) => {
       await setType(results);
     } catch (err) {}
   };
+
+  const fetchPokemonsFiltered = async (typeID, page=1) => {
+    // FILTERS POKEMON BY TYPE
+    try {
+      let numero = parseInt(typeID) + 1;
+      const data = await searchPokemonType(numero);
   
-  const fetchPokemonsFiltered = async (typeID) => {
-    //FILTERS POKEMONS BY TYPE
-    try {  
-      let numero = parseInt(typeID)+1;
-      const data = await searchPokemonType(numero);  
-      
-      const promises = data.pokemon.map(async (pokemon) => {
+      const startIndex = (page - 1) * typePokemonsPerPage;
+      const endIndex = startIndex + typePokemonsPerPage;
+  
+      const promises = data.pokemon.slice(startIndex, endIndex).map(async (pokemon) => {
         return await getPokemonData(pokemon.pokemon.url);
       });
+  
       const results = await Promise.all(promises);
       setSelectedType(results);
-    } catch (err) {}
+    } catch (err) {
+      // Handle error
+    }
   };
-
+  
   const filterType = (typeName, name) => {
     //HANDLES THE SELECTED TYPE
     setSearchValue(name);
-
+    setSelectedTypeID(typeName);
+    setTypePage(1);
     if (typeName === 'all') {
       setSelectedType(pokemons);
+      setSearchValue('all');
     } else {
       fetchPokemonsFiltered(typeName);
     }
   };
 
+
   return (
-    <div>
+    <div className="bg-pokedex bg-repeat w-full h-full p-10 min-h-screen flex items-center justify-center">
+    {loading ? (
+      <div className="w-1/12 text-center">
+        <div className="bg-loading bg-contain bg-no-repeat min-h-screen content-center bg-center animate-spin align-middle"></div>
+      </div>
+    ) : 
+    (<div>
       <div className="header grid grid-cols-12 justify-center">
         <h1 className="font-heywow font-bold text-lg xs:text-5xl sm:text-4xl lg:text-6xl xl:text-7xl text-gray-600 text-center mt-12 col-span-12 mb-6">Pokedex</h1>
 
@@ -180,7 +245,7 @@ const Pokedex = (all) => {
             </select>
 
             <div className="relative w-full">
-                <input value={searchValue} onChange={handleSearch} className="p-2.5 w-full z-20 text-sm text-gray-900 bg-gray-50 rounded-e-lg border-s-gray-50 border-s-2 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-s-gray-700  dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500" placeholder="Search Pokemon..." />
+                <input value={searchValue} onChange={handleSearch} className="p-2.5 w-full z-20 text-sm text-gray-900 bg-gray-50 rounded-e-lg border-s-gray-50 border-s-2 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-s-gray-700  dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500" placeholder="Search Pokemon..." disabled={selectedCategory == "type"}/>
 
                 <button type="button" className="absolute top-0 end-0 p-2.5 text-sm font-medium h-full text-white bg-blue-700 rounded-r-sm border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" onClick={handleSearch}>
                   <svg className="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
@@ -212,6 +277,7 @@ const Pokedex = (all) => {
 
       </div>
 
+
       { // BLUR BACKGROUND WHEN POKEMON IS SELECTED 
         selectedPokemon && (
           <div
@@ -242,7 +308,7 @@ const Pokedex = (all) => {
               <div className="justify-self-center col-span-12 bg-gray-200 rounded-sm py-4 px-6 bg-opacity-80 ">
                   <h1>Pokemon Not Found :(</h1>
               </div>
-            )}
+            )} 
           </div>
         )
       }
@@ -254,7 +320,7 @@ const Pokedex = (all) => {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-6 mr-8 ml-8">
               {selectedType.map((pokemon, idx) => {              
                 return <Pokemon pokemon={pokemon} key={pokemon.name} index={idx} onClick={handlePokemonClick} />;
-              })}          
+              })}       
             </div>
           </div>     
         )
@@ -269,11 +335,23 @@ const Pokedex = (all) => {
           </div>    
         )
       }
+
+
+      <div className="grid grid-cols-12 mt-8">   
+        <button
+            className="font-heywow font-semibold col-span-4 lg:col-span-1 bg-gray-300 hover:bg-gray-400 focus:ring-2 rounded-sm p-4 hover:bg-gray-400 bg-gray-200 text-gray-600 transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110`"
+            onClick={() => changePage("prev")}>PREV</button> 
+
+         <button
+            className="font-heywow font-semibold col-span-4 lg:col-span-1 bg-gray-300 hover:bg-gray-400 focus:ring-2 rounded-sm p-4 hover:bg-gray-400 bg-gray-200 col-start-9 lg:col-start-12 text-gray-600 transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110`"
+            onClick={() => changePage("next")}>NEXT</button>         
+      </div>
       
       <div className="grid grid-rows-2">
         <Detail pokemon={selectedPokemon} onClose={() => setSelectedPokemon(null)} onNextClick={handleNextClick} onPrevClick={handlePrevClick}/>
       </div>
 
+    </div>)}
     </div>
   );
 };

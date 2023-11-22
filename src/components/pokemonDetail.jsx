@@ -1,9 +1,9 @@
 import React from "react";
 import {getTypeClass} from './pokemon';
-import { addTeam } from "../App";
+import { handleConfirmationAlert, handleErrorAlert } from "../App";
 import { Bar } from "react-chartjs-2";
 import { Chart, CategoryScale, LinearScale, BarElement } from 'chart.js';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 const Detail = (props) => {
     const { pokemon, onClose, onNextClick, onPrevClick } = props;
@@ -13,12 +13,26 @@ const Detail = (props) => {
         return null;
     }
 
-    Chart.register(LinearScale, CategoryScale, BarElement);
-
-    if (!pokemon) {
-        return null;
-    }
+    const addTeam = (pokemon) => {
+        const isPokemonInTeam = window.team.some((teamPokemon) => teamPokemon.name === pokemon.name);
     
+        if (window.team.length < 6) {
+            if (!isPokemonInTeam) {
+                window.team.push(pokemon);
+                localStorage.setItem('teamArray', JSON.stringify(window.team));
+                handleConfirmationAlert('Pokemon Added');
+            } else {
+                handleErrorAlert('Error', 'You already have that pokemon on your team');
+            }
+        } else {
+            handleErrorAlert('Your team is full', 'Your team can only have 6 pokemons');
+        }
+    };
+    
+
+    // CHART  ------------------------------------------------------------------------------------------------------
+
+    Chart.register(LinearScale, CategoryScale, BarElement);
     const data = {
         labels: pokemon.stats.map((stat) => `${stat.stat.name} (${stat.base_stat})`),
         datasets: [
@@ -31,9 +45,9 @@ const Detail = (props) => {
             borderRadius: 10,
           },
         ],
-      };
+    };
     
-      const options = {
+    const options = {
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
@@ -55,11 +69,13 @@ const Detail = (props) => {
                   },
             },
         },
-      };
+    };
       
-      const handleCategory = (cat) => {
+    // INFORMATION  ------------------------------------------------------------------------------------------------------
+
+    const handleCategory = (cat) => {
         setSelectedCategory(cat);
-      };
+    };
 
     return (
         <div className={`${getTypeClass(pokemon.types[0].type.name)} fixed rounded-md z-50 bottom-0 inset-x-4 md:inset-x-32 lg:instet-x-64 inset-y-20`}>
@@ -107,8 +123,8 @@ const Detail = (props) => {
                         <tbody>
                             <tr className="grid grid-cols-12">
                                 <td className="font-normal sm:text-lg capitalize font-heywow text-gray-800 col-span-4 sm:col-span">Species</td>
-                                {pokemon.types.map((type) => {
-                                return <td className="font-bold capitalize font-heywow text-gray-800 sm:text-lg col-span-3">
+                                {pokemon.types.map((type, index) => {
+                                return <td key={index} className="font-bold capitalize font-heywow text-gray-800 sm:text-lg col-span-3">
                                             {type.type.name}
                                         </td>;
                                 })}
@@ -123,8 +139,8 @@ const Detail = (props) => {
                             </tr>  
                             <tr className="grid grid-cols-12">
                                 <td className="font-normal capitalize font-heywow text-gray-800	 col-span-4 sm:text-lg">Abilities</td>
-                                {pokemon.abilities.map((ability) => {
-                                return <td className="font-bold capitalize font-heywow text-gray-800 sm:text-lg col-span-3">
+                                {pokemon.abilities.map((ability, index) => {
+                                return <td key={index} className="font-bold capitalize font-heywow text-gray-800 sm:text-lg col-span-3">
                                             {ability.ability.name}
                                         </td>;
                                 })}
@@ -138,10 +154,6 @@ const Detail = (props) => {
             </div>
   
         </div>
-
-
-
-
     );      
 }
 
